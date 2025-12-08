@@ -195,15 +195,23 @@ function AnalyzeTab() {
   // Step 2: Project Requirements
   return (
     <Box sx={{ animation: `${slideUp} 0.5s ease` }}>
-      <GlassCard sx={{ p: 4, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
+      <GlassCard sx={{ p: { xs: 2, md: 4 }, mb: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          gap: 2,
+          mb: 3 
+        }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
             Project Requirements
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Chip
               icon={isStudent ? <SchoolIcon /> : <BusinessIcon />}
-              label={isStudent ? 'Student Pricing' : 'Regular Pricing'}
+              label={isStudent ? 'Student' : 'Regular'}
+              size="small"
               sx={{
                 background: isStudent ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.2)',
                 color: isStudent ? '#10b981' : '#6366f1',
@@ -211,7 +219,7 @@ function AnalyzeTab() {
                 fontWeight: 600,
               }}
             />
-            <GradientButton variant="secondary" onClick={handleBack} sx={{ py: 1, px: 2 }}>
+            <GradientButton variant="secondary" onClick={handleBack} sx={{ py: 0.5, px: 1.5, fontSize: '0.8rem' }}>
               Change
             </GradientButton>
           </Box>
