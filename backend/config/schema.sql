@@ -11,9 +11,9 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Default user will be created by setup script
--- Run: cd backend && npm install && node scripts/setup-user.js
--- Then copy the INSERT statement and run it in MySQL
+-- Insert default user (username: echomedia, password: Echomedia@1337)
+INSERT INTO users (username, password) VALUES 
+('echomedia', '$2b$10$qmIpIlSoHlwep5hxD3VsN.KCajiaejk/iULr7JFMWsczxnSWUH.nm');
 
 -- Pricing dataset table (MYR currency)
 -- Student complete system range: RM350-1100

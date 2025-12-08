@@ -70,9 +70,6 @@ EOF
 # Install dependencies
 npm install
 
-# Setup default user (username: echomedia, password: Echomedia@1337)
-node scripts/setup-user.js
-
 # Start with PM2
 pm2 start server.js --name pricer-backend
 pm2 save
