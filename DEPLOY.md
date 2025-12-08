@@ -65,11 +65,15 @@ DB_USER=pricer_user
 DB_PASSWORD=your_secure_password
 DB_NAME=pricer_setter
 PORT=5000
-ACCESS_CODE=your_access_code
 EOF
 
-# Install dependencies & start
+# Install dependencies
 npm install
+
+# Setup default user (username: echomedia, password: Echomedia@1337)
+node scripts/setup-user.js
+
+# Start with PM2
 pm2 start server.js --name pricer-backend
 pm2 save
 ```

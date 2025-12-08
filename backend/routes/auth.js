@@ -1,21 +1,46 @@
 const express = require('express');
 const router = express.Router();
-require('dotenv').config();
+const bcrypt = require('bcrypt');
+const pool = require('../config/db');
 
-// Verify access code
-router.post('/login', (req, res) => {
-  const { code } = req.body;
-  const accessCode = process.env.ACCESS_CODE;
+// Login with username/password
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
 
-  if (!code || code !== accessCode) {
-    return res.status(401).json({ success: false, message: 'Invalid access code' });
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Username and password required' });
   }
 
-  res.json({ success: true, token: Buffer.from(code + ':' + Date.now()).toString('base64') });
+  try {
+    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+    
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const user = rows[0];
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = Buffer.from(JSON.stringify({ 
+      userId: user.id, 
+      username: user.username, 
+      timestamp: Date.now() 
+    })).toString('base64');
+
+    res.json({ success: true, token, username: user.username });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 // Verify token middleware
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,13 +49,16 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const token = authHeader.split(' ')[1];
-    const decoded = Buffer.from(token, 'base64').toString('utf-8');
-    const [code] = decoded.split(':');
+    const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
     
-    if (code !== process.env.ACCESS_CODE) {
+    // Verify user exists
+    const [rows] = await pool.query('SELECT id FROM users WHERE id = ?', [decoded.userId]);
+    
+    if (rows.length === 0) {
       return res.status(401).json({ error: 'Invalid token' });
     }
     
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' });

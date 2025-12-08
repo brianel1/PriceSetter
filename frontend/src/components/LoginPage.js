@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, TextField, Typography, Alert, InputAdornment, IconButton } from '@mui/material';
 import { keyframes } from '@mui/system';
+import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import CalculateIcon from '@mui/icons-material/Calculate';
 import { login } from '../api';
 import GlassCard from './GlassCard';
 import GradientButton from './GradientButton';
@@ -19,29 +19,50 @@ const pulse = keyframes`
   50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.8); }
 `;
 
+const inputStyles = {
+  '& .MuiOutlinedInput-root': {
+    background: 'rgba(255,255,255,0.05)',
+    borderRadius: 2,
+    '& fieldset': {
+      borderColor: 'rgba(255,255,255,0.1)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(99, 102, 241, 0.5)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#6366f1',
+    },
+  },
+  '& input': {
+    color: 'white',
+  },
+};
+
 function LoginPage({ onLogin }) {
-  const [code, setCode] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showCode, setShowCode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    if (!username.trim() || !password.trim()) return;
     
     setLoading(true);
     setError('');
 
     try {
-      const result = await login(code);
+      const result = await login(username, password);
       if (result.success) {
         localStorage.setItem('pricer_token', result.token);
+        localStorage.setItem('pricer_user', result.username);
         onLogin(result.token);
       } else {
-        setError('Invalid access code');
+        setError('Invalid username or password');
       }
     } catch (err) {
-      setError('Invalid access code');
+      setError('Invalid username or password');
     } finally {
       setLoading(false);
     }
@@ -96,7 +117,7 @@ function LoginPage({ onLogin }) {
         </Typography>
         
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', mb: 4 }}>
-          Enter your access code to continue
+          Sign in to continue
         </Typography>
 
         {error && (
@@ -116,11 +137,26 @@ function LoginPage({ onLogin }) {
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            type={showCode ? 'text' : 'password'}
-            placeholder="Access Code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             autoFocus
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon sx={{ color: 'rgba(255,255,255,0.3)' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 2, ...inputStyles }}
+          />
+          
+          <TextField
+            fullWidth
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -130,43 +166,26 @@ function LoginPage({ onLogin }) {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setShowCode(!showCode)}
+                    onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                     sx={{ color: 'rgba(255,255,255,0.3)' }}
                   >
-                    {showCode ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
-            sx={{
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: 2,
-                '& fieldset': {
-                  borderColor: 'rgba(255,255,255,0.1)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(99, 102, 241, 0.5)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#6366f1',
-                },
-              },
-              '& input': {
-                color: 'white',
-              },
-            }}
+            sx={{ mb: 3, ...inputStyles }}
           />
           
           <GradientButton
             type="submit"
             loading={loading}
             fullWidth
+            disabled={!username.trim() || !password.trim()}
             sx={{ py: 1.5 }}
           >
-            {loading ? 'Verifying...' : 'Enter Dashboard'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </GradientButton>
         </form>
 

@@ -9,8 +9,8 @@ const getAuthHeader = () => {
 };
 
 // Login
-export const login = async (code) => {
-  const response = await axios.post(`${API_BASE}/auth/login`, { code });
+export const login = async (username, password) => {
+  const response = await axios.post(`${API_BASE}/auth/login`, { username, password });
   return response.data;
 };
 

@@ -3,6 +3,18 @@ DROP DATABASE IF EXISTS pricer_setter;
 CREATE DATABASE pricer_setter;
 USE pricer_setter;
 
+-- Users table for authentication
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Default user will be created by setup script
+-- Run: cd backend && npm install && node scripts/setup-user.js
+-- Then copy the INSERT statement and run it in MySQL
+
 -- Pricing dataset table (MYR currency)
 -- Student complete system range: RM350-1100
 -- Regular complete system range: RM650-3500
