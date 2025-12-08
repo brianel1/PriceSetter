@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Box, Typography, Tabs, Tab, IconButton, Fade, Grow
+  Container, Box, Typography, Tabs, Tab, IconButton, Fade,
+  BottomNavigation, BottomNavigationAction, useMediaQuery, useTheme
 } from '@mui/material';
 import { keyframes } from '@mui/system';
-import CalculateIcon from '@mui/icons-material/Calculate';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -25,9 +25,11 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
-    // Initial load
     const timer = setTimeout(() => {
       const token = localStorage.getItem('pricer_token');
       if (token) {
@@ -50,6 +52,7 @@ function App() {
     setLoading(true);
     setTimeout(() => {
       localStorage.removeItem('pricer_token');
+      localStorage.removeItem('pricer_user');
       setIsAuthenticated(false);
       setLoading(false);
     }, 800);
@@ -79,7 +82,7 @@ function App() {
   return (
     <>
       <AnimatedBackground />
-      <Box sx={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <Box sx={{ minHeight: '100vh', position: 'relative', zIndex: 1, pb: isMobile ? 8 : 0 }}>
         {/* Header */}
         <Box
           sx={{
@@ -101,14 +104,14 @@ function App() {
                   src="/logo_em.png"
                   alt="EchoMedia"
                   sx={{
-                    width: 45,
-                    height: 45,
+                    width: { xs: 35, md: 45 },
+                    height: { xs: 35, md: 45 },
                     borderRadius: 2,
                     objectFit: 'contain',
                     boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
                   }}
                 />
-                <Box>
+                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                   <Typography
                     variant="h6"
                     sx={{
@@ -126,38 +129,58 @@ function App() {
                 </Box>
               </Box>
 
-              {/* Tabs */}
-              <Tabs
-                value={tab}
-                onChange={handleTabChange}
-                sx={{
-                  ml: 'auto',
-                  mr: 2,
-                  '& .MuiTab-root': {
-                    color: 'rgba(255,255,255,0.6)',
-                    fontWeight: 500,
-                    minHeight: 60,
-                    '&.Mui-selected': {
-                      color: '#fff',
+              {/* Desktop Tabs */}
+              {!isMobile && (
+                <Tabs
+                  value={tab}
+                  onChange={handleTabChange}
+                  sx={{
+                    ml: 'auto',
+                    mr: 2,
+                    '& .MuiTab-root': {
+                      color: 'rgba(255,255,255,0.6)',
+                      fontWeight: 500,
+                      minHeight: 60,
+                      '&.Mui-selected': {
+                        color: '#fff',
+                      },
                     },
-                  },
-                  '& .MuiTabs-indicator': {
-                    background: 'linear-gradient(90deg, #6366f1, #ec4899)',
-                    height: 3,
-                    borderRadius: 2,
-                  },
-                }}
-              >
-                <Tab icon={<AnalyticsIcon />} label="Analyze" iconPosition="start" />
-                <Tab icon={<ReceiptLongIcon />} label="Quotations" iconPosition="start" />
-                <Tab icon={<DatasetIcon />} label="Pricing" iconPosition="start" />
-              </Tabs>
+                    '& .MuiTabs-indicator': {
+                      background: 'linear-gradient(90deg, #6366f1, #ec4899)',
+                      height: 3,
+                      borderRadius: 2,
+                    },
+                  }}
+                >
+                  <Tab icon={<AnalyticsIcon />} label="Analyze" iconPosition="start" />
+                  <Tab icon={<ReceiptLongIcon />} label="Quotations" iconPosition="start" />
+                  <Tab icon={<DatasetIcon />} label="Pricing" iconPosition="start" />
+                </Tabs>
+              )}
+
+              {/* Mobile: Page Title */}
+              {isMobile && (
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    ml: 'auto',
+                    mr: 2,
+                    fontWeight: 600,
+                    color: 'white',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                  }}
+                >
+                  {tab === 0 ? 'Analyze' : tab === 1 ? 'Quotations' : 'Pricing'}
+                </Typography>
+              )}
 
               {/* Logout */}
               <IconButton
                 onClick={handleLogout}
                 sx={{
                   color: 'rgba(255,255,255,0.6)',
+                  ml: isMobile ? 0 : 'auto',
                   '&:hover': {
                     color: '#ec4899',
                     background: 'rgba(236, 72, 153, 0.1)',
@@ -171,7 +194,7 @@ function App() {
         </Box>
 
         {/* Content */}
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
           {tabLoading ? (
             <LoadingScreen message="Loading..." fullScreen={false} />
           ) : (
@@ -184,6 +207,43 @@ function App() {
             </Fade>
           )}
         </Container>
+
+        {/* Mobile Bottom Navigation */}
+        {isMobile && (
+          <BottomNavigation
+            value={tab}
+            onChange={handleTabChange}
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'rgba(15, 15, 35, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              height: 70,
+              zIndex: 100,
+              '& .MuiBottomNavigationAction-root': {
+                color: 'rgba(255,255,255,0.5)',
+                minWidth: 'auto',
+                '&.Mui-selected': {
+                  color: '#6366f1',
+                },
+              },
+              '& .MuiBottomNavigationAction-label': {
+                fontSize: '0.7rem',
+                mt: 0.5,
+                '&.Mui-selected': {
+                  fontSize: '0.7rem',
+                },
+              },
+            }}
+          >
+            <BottomNavigationAction label="Analyze" icon={<AnalyticsIcon />} />
+            <BottomNavigationAction label="Quotations" icon={<ReceiptLongIcon />} />
+            <BottomNavigationAction label="Pricing" icon={<DatasetIcon />} />
+          </BottomNavigation>
+        )}
       </Box>
     </>
   );
