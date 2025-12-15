@@ -2,9 +2,10 @@ const OpenAI = require('openai');
 require('dotenv').config();
 
 // Z.ai API client (OpenAI-compatible SDK)
+// Try different base URL formats - z.ai may use different endpoint
 const zai = new OpenAI({
   apiKey: process.env.ZAI_API_KEY,
-  baseURL: 'https://api.z.ai/v1'
+  baseURL: process.env.ZAI_BASE_URL || 'https://api.zai.ai/v1'
 });
 
 const SYSTEM_PROMPT = `You are an internal AI assistant for a project pricing system. Your job is to:
@@ -55,7 +56,12 @@ async function analyzeProject(requirementText) {
     const content = response.choices[0].message.content;
     return JSON.parse(content);
   } catch (error) {
-    console.error('Z.ai Error:', error);
+    console.error('Z.ai Error Details:', {
+      message: error.message,
+      status: error.status,
+      response: error.response?.data || error.error,
+      baseURL: zai.baseURL
+    });
     throw new Error('Failed to analyze project requirements');
   }
 }
