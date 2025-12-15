@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { analyzeProject, checkSimilarity } = require('../services/openaiService');
+const { analyzeProject, checkSimilarity } = require('../services/zaiService');
 const { calculateProjectPrice, getAllPricingData, addPricingEntry, getPricingEntryById, updatePricingEntry, deletePricingEntry } = require('../services/pricingService');
 const { getProjectPatterns, saveProjectPattern, saveQuotation, getQuotations, getQuotationById, updateQuotationStatus } = require('../services/projectService');
 

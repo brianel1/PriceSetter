@@ -1,8 +1,8 @@
 const OpenAI = require('openai');
 require('dotenv').config();
 
-// Using Z.ai API (OpenAI-compatible)
-const openai = new OpenAI({
+// Z.ai API client (OpenAI-compatible SDK)
+const zai = new OpenAI({
   apiKey: process.env.ZAI_API_KEY,
   baseURL: 'https://api.z.ai/v1'
 });
@@ -43,7 +43,7 @@ Common module categories to consider:
 
 async function analyzeProject(requirementText) {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await zai.chat.completions.create({
       model: 'zeus-70b-preview',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -66,7 +66,7 @@ async function checkSimilarity(keywords, existingProjects) {
   }
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await zai.chat.completions.create({
       model: 'zeus-70b-preview',
       messages: [
         {
