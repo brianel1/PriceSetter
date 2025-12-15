@@ -1,7 +1,13 @@
+const OpenAI = require('openai');
 require('dotenv').config();
 
-const ZAI_API_URL = 'https://api.z.ai/api/paas/v4/chat/completions';
-const ZAI_MODEL = 'zeus-70b-preview';
+// Z.ai client using OpenAI SDK compatibility
+const client = new OpenAI({
+  apiKey: process.env.ZAI_API_KEY,
+  baseURL: 'https://api.z.ai/api/paas/v4/'
+});
+
+const ZAI_MODEL = 'glm-4.5-flash';
 
 const SYSTEM_PROMPT = `You are an internal AI assistant for a project pricing system. Your job is to:
 1. Extract all modules/features from project requirements
@@ -37,40 +43,24 @@ Common module categories to consider:
 - Admin Panel (management interface)
 - Database Design (schema, optimization)`;
 
-async function callZaiAPI(messages, temperature = 0.3) {
-  const response = await fetch(ZAI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.ZAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: ZAI_MODEL,
-      messages,
-      temperature
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Z.ai API Error:', response.status, errorText);
-    throw new Error(`Z.ai API error: ${response.status}`);
-  }
-
-  return response.json();
-}
-
 async function analyzeProject(requirementText) {
   try {
-    const result = await callZaiAPI([
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: `Analyze this project requirement and extract modules:\n\n${requirementText}` }
-    ], 0.3);
+    const response = await client.chat.completions.create({
+      model: ZAI_MODEL,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: `Analyze this project requirement and extract modules:\n\n${requirementText}` }
+      ],
+      temperature: 0.3
+    });
 
-    const content = result.choices[0].message.content;
+    const content = response.choices[0].message.content;
     return JSON.parse(content);
   } catch (error) {
     console.error('Z.ai Error:', error.message);
+    if (error.response) {
+      console.error('Response:', error.response.data);
+    }
     throw new Error('Failed to analyze project requirements');
   }
 }
@@ -81,18 +71,22 @@ async function checkSimilarity(keywords, existingProjects) {
   }
 
   try {
-    const result = await callZaiAPI([
-      {
-        role: 'system',
-        content: 'Compare project keywords and determine similarity. Respond with JSON only: {"similar": true/false, "matchedProjectId": id or null, "similarity_score": 0-100}'
-      },
-      {
-        role: 'user',
-        content: `New project keywords: ${keywords.join(', ')}\n\nExisting projects:\n${JSON.stringify(existingProjects)}`
-      }
-    ], 0.2);
+    const response = await client.chat.completions.create({
+      model: ZAI_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: 'Compare project keywords and determine similarity. Respond with JSON only: {"similar": true/false, "matchedProjectId": id or null, "similarity_score": 0-100}'
+        },
+        {
+          role: 'user',
+          content: `New project keywords: ${keywords.join(', ')}\n\nExisting projects:\n${JSON.stringify(existingProjects)}`
+        }
+      ],
+      temperature: 0.2
+    });
 
-    return JSON.parse(result.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
     console.error('Similarity check error:', error);
     return { similar: false, matchedProject: null };
