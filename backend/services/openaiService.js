@@ -1,8 +1,10 @@
 const OpenAI = require('openai');
 require('dotenv').config();
 
+// Using Z.ai API (OpenAI-compatible)
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.ZAI_API_KEY,
+  baseURL: 'https://api.z.ai/v1'
 });
 
 const SYSTEM_PROMPT = `You are an internal AI assistant for a project pricing system. Your job is to:
@@ -42,19 +44,18 @@ Common module categories to consider:
 async function analyzeProject(requirementText) {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'zeus-70b-preview',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: `Analyze this project requirement and extract modules:\n\n${requirementText}` }
       ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
+      temperature: 0.3
     });
 
     const content = response.choices[0].message.content;
     return JSON.parse(content);
   } catch (error) {
-    console.error('OpenAI Error:', error);
+    console.error('Z.ai Error:', error);
     throw new Error('Failed to analyze project requirements');
   }
 }
@@ -66,7 +67,7 @@ async function checkSimilarity(keywords, existingProjects) {
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'zeus-70b-preview',
       messages: [
         {
           role: 'system',
@@ -77,8 +78,7 @@ async function checkSimilarity(keywords, existingProjects) {
           content: `New project keywords: ${keywords.join(', ')}\n\nExisting projects:\n${JSON.stringify(existingProjects)}`
         }
       ],
-      temperature: 0.2,
-      response_format: { type: 'json_object' }
+      temperature: 0.2
     });
 
     return JSON.parse(response.choices[0].message.content);
